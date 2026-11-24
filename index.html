@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Far Meridian</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./src/system.js"></script>
+  <script defer src="./src/flight.js"></script>
+  <script defer src="./src/navigation.js"></script>
+  <script defer src="./src/map.js"></script>
+  <script defer src="./src/console.js"></script>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div>
+        <p class="kicker">Solenne system</p>
+        <h1>Far Meridian</h1>
+      </div>
+      <div class="mission-clock">
+        <span>Mission time</span>
+        <output id="clock" aria-live="off">00:00:00</output>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <section class="panel chart" aria-labelledby="map-title">
+        <div class="panel-top">
+          <div>
+            <h2 id="map-title">Orbital chart</h2>
+            <p id="focus-label">Aster view</p>
+          </div>
+          <div class="tools">
+            <button type="button" id="local">Local</button>
+            <button type="button" id="system">System</button>
+            <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+            <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+          </div>
+        </div>
+        <canvas id="map" aria-label="Orbital chart. Use the Worlds buttons to focus on a body." role="img">
+          The flight telemetry below reports your orbit.
+        </canvas>
+        <div class="map-footer">
+          <span><i class="legend-line"></i>Projected orbit</span>
+          <span><i class="legend-line planned"></i>Planned transfer</span>
+          <label>Time warp
+            <select id="warp">
+              <option value="0" selected>Paused</option>
+              <option value="1">1×</option>
+              <option value="10">10×</option>
+              <option value="100">100×</option>
+              <option value="1000">1,000×</option>
+              <option value="10000">10,000×</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel plan" aria-labelledby="plan-title">
+        <div class="panel-top">
+          <h2 id="plan-title">Navigation</h2>
+          <output id="frame" class="tag"></output>
+        </div>
+        <div class="panel-body">
+          <label for="target">Destination</label>
+          <select id="target"></select>
+          <p class="plan-note" id="plan-note">Plot a transfer from parking orbit to Kite.</p>
+          <button type="button" class="primary action" id="next"></button>
+          <button type="button" id="clear-route" hidden>Clear route</button>
+
+          <div class="divider"></div>
+          <h3>Orbit assists</h3>
+          <div class="actions">
+            <button type="button" id="capture">Circularize here</button>
+            <button type="button" id="periapsis">Warp to periapsis</button>
+            <button type="button" id="escape">Escape burn</button>
+            <button type="button" id="land">Land</button>
+          </div>
+          <p class="note">Assists use idealized burns and spend propellant.</p>
+
+          <div class="divider"></div>
+          <h3>Worlds</h3>
+          <div id="worlds" class="worlds"></div>
+        </div>
+      </section>
+
+      <section class="panel telemetry" aria-labelledby="telemetry-title">
+        <div class="panel-top">
+          <h2 id="telemetry-title">Flight telemetry</h2>
+          <output id="status-badge" class="tag"></output>
+        </div>
+        <dl class="readouts">
+          <div><dt>Altitude</dt><dd id="altitude"></dd></div>
+          <div><dt>Speed</dt><dd id="speed"></dd></div>
+          <div><dt>Periapsis</dt><dd id="peri"></dd></div>
+          <div><dt>Apoapsis</dt><dd id="apo"></dd></div>
+          <div><dt>Stage Δv</dt><dd id="delta-v"></dd></div>
+        </dl>
+        <p id="notice" class="notice" role="status"></p>
+      </section>
+
+      <section class="panel controls" aria-labelledby="controls-title">
+        <div class="panel-top"><h2 id="controls-title">Vessel controls</h2><output id="engine-name" class="tag" aria-live="off"></output></div>
+        <div class="panel-body">
+          <div class="throttle-label">
+            <label for="throttle">Throttle</label><output id="throttle-output" for="throttle">0%</output>
+          </div>
+          <input id="throttle" type="range" min="0" max="100" value="0">
+          <div class="actions pilot">
+            <label>Attitude
+              <select id="attitude">
+                <option value="prograde">Prograde</option>
+                <option value="retrograde">Retrograde</option>
+                <option value="out">Radial out</option>
+                <option value="in">Radial in</option>
+                <option value="manual">Manual heading</option>
+              </select>
+            </label>
+            <label id="heading-control" hidden>Heading (deg)
+              <input type="number" id="heading" min="0" max="360" value="0">
+            </label>
+          </div>
+          <div class="actions">
+            <button type="button" id="cut">Cut throttle</button>
+            <button type="button" id="stage">Separate stage</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel hangar" aria-labelledby="hangar-title">
+        <div class="panel-top">
+          <h2 id="hangar-title">Vehicle assembly</h2>
+          <p>Set up your next flight</p>
+        </div>
+        <form class="panel-body hangar-controls" id="hangar">
+          <label>Booster
+            <select id="booster">
+              <option value="dart">Dart · Light</option>
+              <option value="pillar" selected>Pillar · Medium</option>
+              <option value="atlas">Atlas · Heavy</option>
+            </select>
+          </label>
+          <label>Transfer stage
+            <select id="engine">
+              <option value="skiff">Skiff · Light</option>
+              <option value="wayfarer" selected>Wayfarer · Medium</option>
+              <option value="nomad">Nomad · Long range</option>
+            </select>
+          </label>
+          <label>Starting point
+            <select id="start">
+              <option value="surface">Aster launch pad</option>
+              <option value="orbit" selected>Aster parking orbit</option>
+              <option value="kite">Kite parking orbit</option>
+              <option value="solar">Solenne cruise orbit</option>
+            </select>
+          </label>
+          <button type="submit" id="new-flight">Start new flight</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
